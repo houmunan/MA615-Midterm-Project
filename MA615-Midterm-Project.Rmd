@@ -1,30 +1,76 @@
 ---
-title: "MA615 Midterm Project"
+title: "Tidying of Job Patterns Data - MA615 Midterm Project"
 author: "Munan Hou"
 date: "October 16, 2016"
 output: html_document
 ---
+#Introduction
+Topic: "Job Patterns For Minorities And Women In Private Industry, 2009 EEO-1 NAICS-4 Aggregate Report"
+File name: YEAR09_CBSA_NAC3.txt
+Resource from: 
+https://catalog.data.gov/dataset/job-patterns-for-minorities-and-women-in-private-industry-2009-eeo-1-naics-4-aggregate-rep
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+#Import Data
+First we import the data from the .txt file, using read.table here. It is noticed that the separation of this dataset is ";" instead of ",", which is the default setting, so we added the "sep = ";" argument. There is no missing values inside the dataset, or the missing values are valued instead of leaving them blank.
+```{r import txt}
+data <- read.table("data/YEAR09_CBSA_NAC3.txt", header = TRUE, sep = ";", quote = "", dec = ".", fill = TRUE)
 ```
+This dataframe contains 600 columns, 9064 rows.
 
-## R Markdown
+#First step, find missing values
+however the first obvious mess is that, it is sure not each of columns is a single variable. Inside columns, 
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+rm(data)
+data2 <- data
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
-```
 
-## Including Plots
+?read.table
+rm("data")
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
