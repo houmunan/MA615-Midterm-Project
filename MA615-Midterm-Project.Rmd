@@ -4,11 +4,20 @@ author: "Munan Hou"
 date: "October 16, 2016"
 output: html_document
 ---
-#Introduction
+#Information of the dataset
 Topic: "Job Patterns For Minorities And Women In Private Industry, 2009 EEO-1 NAICS-4 Aggregate Report"
-File name: YEAR09_CBSA_NAC3.txt
+File name: YEAR09_CBSA_NAC3.txt (with data_dictionary NAICS.xls)
 Resource from: 
 https://catalog.data.gov/dataset/job-patterns-for-minorities-and-women-in-private-industry-2009-eeo-1-naics-4-aggregate-rep
+
+#Introduction
+In my understianding, this dataset is generally used to analyse:
+- the probable different job patterns among races, under each industry, or under each job category.
+- the probable different job patterns between genders, under each industry, or under each job category.
+By reading the data dictionary NAICS.xls, and also by reading the dataset, we can have the information below:
+Three categories under gender: Male, Female and Total
+The industries are separated into 11 different categories within each race and gender, labeled as *1, *2, ... *10, *1_2(* represents the wildcard character). Same number represent the same categoreis although in different industries.
+As long as our purpose to tidy this data are sort of clear, the tidying steps are as follow. After data being tidied up, the data should become more clear to model, compare and test for difference's significance.
 
 #Import Data
 First we import the data from the .txt file, using read.table here. It is noticed that the separation of this dataset is ";" instead of ",", which is the default setting, so we added the "sep = ";" argument. There is no missing values inside the dataset, or the missing values are valued instead of leaving them blank.
@@ -19,6 +28,11 @@ This dataframe contains 600 columns, 9064 rows.
 
 #First step, find missing values
 however the first obvious mess is that, it is sure not each of columns is a single variable. Inside columns, 
+
+```{r}
+is.null(data[c(1:length(data))])
+```
+
 
 rm(data)
 data2 <- data
