@@ -13,6 +13,8 @@ https://catalog.data.gov/dataset/job-patterns-for-minorities-and-women-in-privat
 #Import Data
 First of all we import the data from the .txt file, using read.table here. It is noticed that the separation of this dataset is ";" instead of ",", so we added the "sep";" argument. There is no missing values inside the dataset, or the missing values are valued instead of leaving blank.
 ```{r import txt}
+library(dplyr)
+library(ggplot2)
 data <- read.table("data/YEAR09_CBSA_NAC3.txt", header = TRUE, sep = ";", quote = "", dec = ".", fill = TRUE)
 ```
 This dataframe contains 600 columns(variables), 9064 rows(observations).
@@ -30,19 +32,42 @@ Three categories under gender: Male, Female and Total
 The industries are separated into 11 different categories within each race and gender, labeled as *1, *2, ... *10, *1_2(* represents the wildcard character). Same number represent the same categoreis although in different industries.
 As long as our purpose of tidying this data is known, the tidying steps are as follow. After data being tidied up, the data should become more clear to model, compare and test for difference's significance.
 
-
-
 #First step, analyse the 600 variables
-The first obvious mess thing is that, it is sure not each of columns should be a single variable. Inside columns, there are both variables and observations. For those already listed variables, "CBSA_LABEL" are area information, "NAC3_Label" are industry information; they are for sure fixed variables (dimensions) of the dataframe. For variables "X_TYPE_" and "TOTAL_UNIT", I can't figure out what do they mean; however, counting the outcomes of this variable:
+The first obvious mess thing is that, it is sure not each of columns should be a single variable. Inside columns, there are both variables and observations. Within them, "CBSA_LABEL" are area information, "NAC3_Label" are industry information; they are for sure fixed variables(dimensions) of the data. For variables "X_TYPE_" and "TOTAL_UNIT", I can't figure out what do they mean; however, counting the outcomes of this variable:
 ```{r}
 count(data$X_TYPE_)
 ```
 there is only one kind of outcome. So I think it is proper to treat it as a fixed variable and leave it unchanged. 
-For "TOTAL_UNIT", as long as it seems could be a proper variable, I'll live it and see it as already tidied.
+For "TOTAL_UNIT", as long as it seems could be a proper variable(although not fixed), I'll leave and regard it as already tidied.
+
+Then for the rest of the listed variables. Three different variables should be extracted: 
+- RACE("TOTAL", "WH(White)", "BLK(Black)", "HISP(Hispanic)", "ASIAN", "AIAN(Indian)", "nhopi(Hawaiian)", "tomr(Two Race)", "Min(Minority)", "WHp(%)", "BLKp(%)", "HISPp(%)", "AIANp(%)", "nhopip(%)", "asianp(%)", "tomrp(%)", "Minp(%)", "PTOTAL(%)"), 
+- GENDER("F", "M", "T = F + M"), 
+- INDUSTRY("*1, *2, ... *10, *1_2"s)
+
+4+11*18*3
+ncol(data)
+
+#Drafts
+
 ```{r}
-is.null(data[c(1:length(data))])
+seqtemp <- seq(1,length(data),1)
+v <- c()
+for (i in seqtemp){
+  v[i] <- c(is.null(data[i]))
+}
+print(v)
 ```
 
+v <- c(data$NAC3_Label)
+vFIRMS <- c(data$FIRMS)
+head(vFIRMS, n = 100)
+unique(data$FIRMS)
+
+head(data$WHMp1)
+head(data$WHfp1)
+sump <- data$WHMp1 + data$WHfp1
+head(sump)
 
 rm(data)
 data2 <- data
@@ -57,15 +82,17 @@ count(unique(data$NAC3_Label))
 count(data$NAC3_Label)
 count(data$CBSA_LABEL)
 count(data$TOTAL_UNIT)
+count(data$FIRMS)
+
 TOTAL_UNIT <- data$TOTAL_UNIT
 ggplot(data, aes(x = TOTAL_UNIT, y = count(data$TOTAL_UNIT))) + geom_histogram(binwidth = 5)
 
 
 
 
+data[!complete.cases(data),]
 
-
-
+tbl = tabular 扁平的
 
 
 
