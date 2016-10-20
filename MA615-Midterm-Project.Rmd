@@ -260,8 +260,36 @@ data_sort_in <- merge(data_sort_in, data_sort_in_3, by=c("label", "INDUSTRY"))
 
 }
 ```
-VAR_NAME[3]
-?subset
+
+```{r make dictionary}
+data_dict <- data[c(1:5,(ncol(data)-1),ncol(data))]
+head(data_dict)
+```
+
+```{r merge}
+data_sort_in_final <- right_join(data_dict, data_sort_in, by="label")
+```
+
+```{r rename INDUSTRY}
+data_sort_in_final <- data_sort_in_final
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "1")] = "SENIOR OFF AND MGRS"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "2")] = "PROFESSIONALS"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "3")] = "TECHNICIANS"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "4")] = "SALES WORKERS"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "5")] = "OFFICE AND CLERICALS"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "6")] = "CRAFT WORKERS"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "7")] = "OPERATIVES"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "8")] = "LABORERS"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "9")] = "SERVICE WORKERS"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "10")] = "TOTAL"
+data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "11")] = "MID OFF AND MGRS"
+```
+
+```{r re-list variables, remove label}
+data_sort_in_final <- data_sort_in_final[,c(2:5),c(8:ncol(data_sort_in_final),c(6:7))]
+```
+
+So this is the final tidy dataset in this situation.
 
 ```{r}
 data_TOTAL <- gather(data_TOTAL, INDUSTRY_T, INDUSTRY_count, 5:15)
