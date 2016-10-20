@@ -199,6 +199,8 @@ Now tidying.
 As I have analyzed before, at first I believe the dataset should be totally tidied, as all the 11 different "INDUSTRY" categories within each race and gender are spreading in columns, labeled as *1, *2, ... *10, *1_2, these should be merged into variables of "INDUSTRY" and "count", just as what need to be done on "RACE" and "GENDER"
 I first splitted all different "RACE"s and "GENDER"s into separated spreadsheets, define the first chain of the loop by merging its "*1, *2, ... *10, *1_2" into "INDUSTRY" and "count", then use if loop and similar method to automatically merge all other "INDUSTRY"s and "count"s among each combination of "RACE" and "GENDER". At the same time, I add "RACE" and "GENDER" columns into each spreadsheets, for future combine into two overall "RACE" and "GENDER" variable.
 
+#Method 1
+
 ```{r first step tidying TOTALLY everything}
 data_TOTAL_T <- data[c(1, 6:16)]
 data_TOTAL_M <- data[c(1, 17:27)]
@@ -251,6 +253,13 @@ data_TOTAL <- bind_rows(data_TOTAL, data_TOTAL_T, data_TOTAL_F, data_TOTAL_M)
 head(data_TOTAL)
 ```
 
+delete rows of count = 0 or NA
+
+```{r}
+data_TOTAL <- filter(data_TOTAL, is.na(count) == FALSE)
+data_TOTAL <- filter(data_TOTAL, count != 0)
+```
+
 rename "INDUSTRY"
 
 ```{r rename INDUSTRY}
@@ -286,7 +295,7 @@ So that's it.
 
 But this could be too long. Also, it might be unnecessary to tidy industries because we don't need to test the difference among different industry.
 
-#Another way
+#Method 2
 
 For compare different races & genders in same industries, maybe only tidy the part of industries can be enough:
 
@@ -314,7 +323,7 @@ data_sort_in <- merge(data_sort_in, data_sort_in_3, by=c("label", "INDUSTRY"))
 
 ```{r second step loop}
 
-for (i in 1:(11*18*3-1)) {
+for (i in 1:17) {
 
 data_sort_in_1 <- data[c(1, (33*i + 6):(33*i + 16))]
 data_sort_in_2 <- data[c(1, (33*i + 17):(33*i + 27))]
@@ -335,10 +344,14 @@ data_sort_in <- merge(data_sort_in, data_sort_in_2, by=c("label", "INDUSTRY"))
 data_sort_in <- merge(data_sort_in, data_sort_in_3, by=c("label", "INDUSTRY"))
 
 }
+head(data_sort_in)
 ```
+
+merge with dictionary
 
 ```{r merge with dictionary}
 data_sort_in_final <- right_join(data_dict, data_sort_in, by="label")
+head(data_sort_in_final)
 ```
 
 ```{r rename INDUSTRY}
@@ -353,13 +366,28 @@ data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "8")] = "LABORE
 data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "9")] = "SERVICE WORKERS"
 data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "10")] = "TOTAL"
 data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "11")] = "MID OFF AND MGRS"
+head(data_sort_in_final)
 ```
 
-```{r re-list variables, remove label}
+re-arrange
+
+```{r re-arrange variables, remove label}
 data_sort_in_final <- data_sort_in_final[,c(2:5),c(8:ncol(data_sort_in_final),c(6:7))]
+head(data_sort_in_final)
 ```
 
-So this is the final tidy dataset in this situation.
+So this is the final tidy dataset in this situation. But in this form, we cannot easily remove all the 0's and NA's. So compare to Method 1, Method 2 is not as good as the previous method.
+
+#Result
+
+Choose Method 1
+
+#Visualization
+
+For data_TOTAL,
+
+
+
 
 
 
