@@ -4,6 +4,21 @@ library(ggplot2)
 
 
 
+
+#===
+ 
+  data_TOTAL %>%
+  ggvis(x=input_select(colnames(data_TOTAL), map=as.name,label='x'),
+        y=input_select(colnames(data_TOTAL), map=as.name,label='y'),
+        size=input_select(colnames(data_TOTAL), map=as.name,label='size'),
+        fill=input_select(colnames(data_TOTAL), map=as.name,label='fill')
+  ) %>% layer_points() %>%
+  add_axis("x", title='x axis') %>%
+  add_axis("y", title='y axis')  
+   
+#  ===
+
+
 apropos("environment")
 ?rs.environment
 ?.rs.saveEnvironment
