@@ -4,6 +4,7 @@ author: "Munan Hou"
 date: "October 16, 2016"
 output: html_document
 ---
+
 #Information of the dataset
 Topic: "Job Patterns For Minorities And Women In Private Industry, 2009 EEO-1 NAICS-4 Aggregate Report"
 File name: YEAR09_CBSA_NAC3.txt (with data_dictionary NAICS.xls)
@@ -110,35 +111,21 @@ In my first thought, there should be actually these fixed and measured variable 
 
 So I'll try to start tidy now.
 
-```{r}
+First, I added one column called 'label'. I'll merge the separated dataframe by this identical variable.
+
+```{r mark label}
 data$label <- c(1:nrow(data)) #mark for further merge
 data <- data[,c(601,1:600)] #rearrange the label vector to the first
 ```
 
-```{r}
-VAR_NAME_ALL <- c(variable.names(data))
-VAR_NAME_temp <- VAR_NAME_ALL[seq(6,589,11)]
-VAR_NAME_temp #will be used later, in order to rename the merged races and genders' variables
-```
-
-```{r}
-VAR_NAME <- c("TOTAL","MT","FT","WHT","WHM","WHF","BLKT","BLKM","BLKF","HISPT","HISPM","HISPF","ASIANT","ASIANM","ASIANF","AIANT","AIANM","AIANF","nhopiT","NHOPIM","NHOPIF","tomrT","TOMRM","TOMRF","MinT","MinM","MinF","WHtp","WHMp","WHfp","BLKtp","BLKMp","BLKfp","HISPtp","HISPMp","HISPfp","AIANtp","AIANMp","AIANfp","nhopitp","nhopiMp","nhopifp","asiantp","asianMp","asianfp","tomrtp","tomrMp","tomrfp","MinTp","MinMp","MinFp","PTOTAL","MTp","FTp")
-RACE_NAME <- c("TOTAL","WH","BLK","HISP","ASIAN","AIAN","nhopi","tomr","Min","WHp","BLKp","HISPp","AIANp","nhopip","asianp","tomrp","Minp","PTOTAL")
-```
-
-```{r}
-data <- data_backup #Always have everyting backuped
-```
-
-#Trying to tidy all variables up
-
-First notice the sequence of each "total", "male" and "female" are not fixed. For further convenience when looping, we make up the columns first, letting them in a tidy order of "T", "M", "F".
+But I notice that the sequence of each "total", "male" and "female" are not in order. For further convenience when looping, I make up the columns first, letting them in a tidy order of "T", "M", "F".
 
 ```{r}
 name_list <- data.frame(number=c(1:(601)), variable.names(data)[1:601])
 ```
-data <- data_backup
+
 Then read manully and rearrange.
+
 ```{r}
 data <- data[,c(1:280, 292:302, 281:291,
                 
@@ -182,15 +169,43 @@ data <- data[,c(1:280, 292:302, 281:291,
                 )]
 ```
 
+There is order in it, so not too difficult to do this.
+
 ```{r}
 name_list_test <- data.frame(number=c(1:(601)), variable.names(data)[1:601])
 ```
 
 Succeeded.
 
+Then I define 
+
+```{r}
+VAR_NAME_ALL <- c(variable.names(data))
+VAR_NAME_temp <- VAR_NAME_ALL[seq(6,589,11)]
+VAR_NAME_temp
+```
+
+This "VAR_NAME_temp will" and the VAR_NAME and RACE_NAME be used later, in order to rename the merged variables.
+
+So I have extracted names to be corrected manully. 
+
+```{r}
+VAR_NAME <- c("TOTAL","MT","FT","WHT","WHM","WHF","BLKT","BLKM","BLKF","HISPT","HISPM","HISPF","ASIANT","ASIANM","ASIANF","AIANT","AIANM","AIANF","nhopiT","NHOPIM","NHOPIF","tomrT","TOMRM","TOMRF","MinT","MinM","MinF","WHtp","WHMp","WHfp","BLKtp","BLKMp","BLKfp","HISPtp","HISPMp","HISPfp","AIANtp","AIANMp","AIANfp","nhopitp","nhopiMp","nhopifp","asiantp","asianMp","asianfp","tomrtp","tomrMp","tomrfp","MinTp","MinMp","MinFp","PTOTAL","MTp","FTp")
+RACE_NAME <- c("TOTAL","WH","BLK","HISP","ASIAN","AIAN","nhopi","tomr","Min","WHp","BLKp","HISPp","AIANp","nhopip","asianp","tomrp","Minp","PTOTAL")
+```
+
+```{r}
+data <- data_backup #Always have everyting backuped
+```
+
+#Trying to tidy all variables up
+
 Now tidying.
 
-```{r first step tidying everything}
+As I have analyzed before, at first I believe the dataset should be totally tidied, as all the 11 different "INDUSTRY" categories within each race and gender are spreading in columns, labeled as *1, *2, ... *10, *1_2, these should be merged into variables of "INDUSTRY" and "count", just as what need to be done on "RACE" and "GENDER"
+I first splitted all different "RACE"s and "GENDER"s into separated spreadsheets, define the first chain of the loop by merging its "*1, *2, ... *10, *1_2" into "INDUSTRY" and "count", then use if loop and similar method to automatically merge all other "INDUSTRY"s and "count"s among each combination of "RACE" and "GENDER". At the same time, I add "RACE" and "GENDER" columns into each spreadsheets, for future combine into two overall "RACE" and "GENDER" variable.
+
+```{r first step tidying TOTALLY everything}
 data_TOTAL_T <- data[c(1, 6:16)]
 data_TOTAL_M <- data[c(1, 17:27)]
 data_TOTAL_F <- data[c(1, 28:38)]
@@ -240,19 +255,50 @@ data_TOTAL <- bind_rows(data_TOTAL, data_TOTAL_T, data_TOTAL_F, data_TOTAL_M)
 }
 ```
 
+rename "INDUSTRY"
 
+```{r rename INDUSTRY}
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "1")] = "SENIOR OFF AND MGRS"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "2")] = "PROFESSIONALS"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "3")] = "TECHNICIANS"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "4")] = "SALES WORKERS"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "5")] = "OFFICE AND CLERICALS"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "6")] = "CRAFT WORKERS"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "7")] = "OPERATIVES"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "8")] = "LABORERS"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "9")] = "SERVICE WORKERS"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "10")] = "TOTAL"
+data_TOTAL$INDUSTRY[which(data_TOTAL$INDUSTRY == "11")] = "MID OFF AND MGRS"
+```
 
+Creat a "dictionary" that also marked by "label", then merge it with the dataset.
 
+```{r make dictionary}
+data_dict <- data[c(1:5,(ncol(data)-1),ncol(data))]
+head(data_dict)
+```
 
+merge with dataframe "dictionary" by variable "label",
 
-But this could be too long. My computer won't handle this tidy format.
+```{r}
+data_TOTAL <- right_join(data_dict, data_TOTAL, by="label")
+```
 
-Also, it  can be unnecessary to tidy industries because we don't need to test the difference among different industry
+re-arrange, remove label
 
-#For compare different races & genders in same industries, we only tidy the part of industries:
+```{r re-list variables, remove label}
+data_TOTAL <- data_TOTAL[,c(2:5),c(8:ncol(data_TOTAL),c(6:7))]
+```
 
+head(data_TOTAL)
 
+So that's it.
 
+But this could be too long. Also, it might be unnecessary to tidy industries because we don't need to test the difference among different industry.
+
+#Another way
+
+For compare different races & genders in same industries, maybe only tidy the part of industries can be enough:
 
 ```{r first step before loop}
 INDUSTRY_NAME <- c("label", 1:11)
@@ -275,9 +321,8 @@ names(data_sort_in_3) <- c("label", "INDUSTRY", VAR_NAME[3])
 data_sort_in <- merge(data_sort_in_1, data_sort_in_2, by=c("label", "INDUSTRY"))
 data_sort_in <- merge(data_sort_in, data_sort_in_3, by=c("label", "INDUSTRY"))
 ```
-rm(data_sort_in_3)
-```{r second step loop}
 
+```{r second step loop}
 
 for (i in 1:(11*18*3-1)) {
 
@@ -302,17 +347,11 @@ data_sort_in <- merge(data_sort_in, data_sort_in_3, by=c("label", "INDUSTRY"))
 }
 ```
 
-```{r make dictionary}
-data_dict <- data[c(1:5,(ncol(data)-1),ncol(data))]
-head(data_dict)
-```
-
-```{r merge}
+```{r merge with dictionary}
 data_sort_in_final <- right_join(data_dict, data_sort_in, by="label")
 ```
 
 ```{r rename INDUSTRY}
-data_sort_in_final <- data_sort_in_final
 data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "1")] = "SENIOR OFF AND MGRS"
 data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "2")] = "PROFESSIONALS"
 data_sort_in_final$INDUSTRY[which(data_sort_in_final$INDUSTRY == "3")] = "TECHNICIANS"
@@ -331,212 +370,6 @@ data_sort_in_final <- data_sort_in_final[,c(2:5),c(8:ncol(data_sort_in_final),c(
 ```
 
 So this is the final tidy dataset in this situation.
-
-
-
-
-
-
-
-
-#Drafts
-
-```{r}
-data_TOTAL <- gather(data_TOTAL, INDUSTRY_T, INDUSTRY_count, 5:15)
-data_TOTAL <- gather(data_TOTAL, INDUSTRY_M, INDUSTRY_count, 5:15)
-data_TOTAL <- gather(data_TOTAL, INDUSTRY_F, INDUSTRY_count, 5:15)
-head(data_TOTAL)
-```
-
-```{r gather WH}
-data2 <- gather(data, INDUSTRY_TOTAL, INDUSTRY_count, 5:15)
-head(data2[,c(1:4,590,591)])
-```
-
-
-```{r forgot merge by multiple columns}
-data_sort_in_T <- data[c(1, 6:16)]
-data_sort_in_M <- data[c(1, 17:27)]
-data_sort_in_F <- data[c(1, 28:38)]
-
-INDUSTRY_NAME <- c("label", 1:11)
-names(data_sort_in_T) <- names(data_sort_in_M) <- names(data_sort_in_F) <- INDUSTRY_NAME
-
-
-data_sort_in_T <- gather(data_sort_in_T, INDUSTRY, count_Tt, 2:12)
-data_sort_in_M <- gather(data_sort_in_M, INDUSTRY, count_Tm, 2:12)
-data_sort_in_F <- gather(data_sort_in_F, INDUSTRY, count_Tf, 2:12)
-
-data_sort_in_T$label_2 <- c(1:nrow(data_sort_in_T))
-data_sort_in_M$label_2 <- c(1:nrow(data_sort_in_M)) 
-data_sort_in_F$label_2 <- c(1:nrow(data_sort_in_F))  
-
-data_sort_in_T <- data_sort_in_T[,-1]
-data_sort_in_M <- data_sort_in_M[,-(1:2)]
-data_sort_in_F <- data_sort_in_F[,-(1:2)]
-
-data_sort_in <- left_join(data_sort_in_T, data_sort_in_F, by="label_2")
-data_sort_in <- left_join(data_sort_in, data_sort_in_M, by="label_2")
-```
-
-```{r fixed one step}
-data_sort_in_T <- data[c(1, 6:16)]
-data_sort_in_M <- data[c(1, 17:27)]
-data_sort_in_F <- data[c(1, 28:38)]
-
-INDUSTRY_NAME <- c("label", 1:11)
-as.numeric(INDUSTRY_NAME)
-names(data_sort_in_T) <- names(data_sort_in_M) <- names(data_sort_in_F) <- INDUSTRY_NAME
-
-
-data_sort_in_T <- gather(data_sort_in_T, INDUSTRY, count_Tt, 2:12)
-data_sort_in_M <- gather(data_sort_in_M, INDUSTRY, count_Tm, 2:12)
-data_sort_in_F <- gather(data_sort_in_F, INDUSTRY, count_Tf, 2:12)
-
-
-
-data_sort_in <- merge(data_sort_in_T, data_sort_in_M, by=c("label", "INDUSTRY"))
-data_sort_in <- merge(data_sort_in, data_sort_in_F, by=c("label", "INDUSTRY"))
-```
-
-rm(data_TOTAL_gathered)
-
-```{r}
-data_WH
-data_BLK
-data_HISP
-data_ASIAN
-data_AIAN
-data_nhopi
-data_tomr
-data_Min
-data_WHp
-data_BLKp
-data_HISPp
-data_AIANp
-data_nhopip
-data_asianp
-data_tomrp
-data_Minp
-data_PTOTAL
-```
-
-
-```{r}
-data2 <- data
-gather(data2, INDUSTRY, )
-```
-
-stocks <- data_frame(
-  time = as.Date('2009-01-01') + 0:9,
-  X = rnorm(10, 0, 1),
-  Y = rnorm(10, 0, 2),
-  Z = rnorm(10, 0, 4)
-)
-
-stocks3 <- gather(stocks, stock, price, 2:4)
-stocksb <- data.frame(stocks,
-  A = rnorm(10, 0, 8),
-  B = rnorm(10, 0, 16),
-  C = rnorm(10, 0, 32)
-)
-
-```{r}
-
-```
-
-bind_rows()
-
-4+11*18*3
-ncol(data)
-
-
-
-```{r}
-seqtemp <- seq(1,length(data),1)
-v <- c()
-for (i in seqtemp){
-  v[i] <- c(is.null(data[i]))
-}
-print(v)
-```
-
-v <- c(data$NAC3_Label)
-vFIRMS <- c(data$FIRMS)
-head(vFIRMS, n = 100)
-unique(data$FIRMS)
-
-head(data$WHMp1)
-head(data$WHfp1)
-sump <- data$WHMp1 + data$WHfp1
-head(sump)
-
-rm(data)
-data2 <- data
-
-
-
-?read.table
-rm("data")
-
-
-count(unique(data$NAC3_Label))
-count(data, NAC3_Label)
-count(data, CBSA_LABEL)
-vcount <- count(data, TOTAL_UNIT)
-
-head(vcount)
-hist(vcount)
-
-
-count()
-
-TOTAL_UNIT <- data$TOTAL_UNIT
-ggplot(data, aes(x = TOTAL_UNIT, y = count(data$TOTAL_UNIT))) + geom_histogram(binwidth = 5)
-
-
-
-
-data[!complete.cases(data),]
-
-tbl = tabular 扁平的
-
-
-
-
-cc <- count(data, pctofst)
-
-
-#Split
-
-Split by RACE, GENDER, 
-
-```{r}
-data_TOTAL <- data[c(5:15)]
-data_TOTAL_gathered <- gather(data_TOTAL, INDUSTRY, count, 1:11)
-data_TOTAL_gathered <- mutate(data_TOTAL_gathered, RACE = "T", GENDER = "T")
-#stocks3 <- gather(stocks, stock, price, 2:4)
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

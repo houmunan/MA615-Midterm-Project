@@ -84,3 +84,213 @@ test <- data[,c(1:275, 287:297, 276:286,
 ```
 
 
+
+#=================DRAFT=====================================================================
+
+
+
+
+
+#Drafts
+
+```{r}
+data_TOTAL <- gather(data_TOTAL, INDUSTRY_T, INDUSTRY_count, 5:15)
+data_TOTAL <- gather(data_TOTAL, INDUSTRY_M, INDUSTRY_count, 5:15)
+data_TOTAL <- gather(data_TOTAL, INDUSTRY_F, INDUSTRY_count, 5:15)
+head(data_TOTAL)
+```
+
+```{r gather WH}
+data2 <- gather(data, INDUSTRY_TOTAL, INDUSTRY_count, 5:15)
+head(data2[,c(1:4,590,591)])
+```
+
+
+```{r forgot merge by multiple columns}
+data_sort_in_T <- data[c(1, 6:16)]
+data_sort_in_M <- data[c(1, 17:27)]
+data_sort_in_F <- data[c(1, 28:38)]
+
+INDUSTRY_NAME <- c("label", 1:11)
+names(data_sort_in_T) <- names(data_sort_in_M) <- names(data_sort_in_F) <- INDUSTRY_NAME
+
+
+data_sort_in_T <- gather(data_sort_in_T, INDUSTRY, count_Tt, 2:12)
+data_sort_in_M <- gather(data_sort_in_M, INDUSTRY, count_Tm, 2:12)
+data_sort_in_F <- gather(data_sort_in_F, INDUSTRY, count_Tf, 2:12)
+
+data_sort_in_T$label_2 <- c(1:nrow(data_sort_in_T))
+data_sort_in_M$label_2 <- c(1:nrow(data_sort_in_M)) 
+data_sort_in_F$label_2 <- c(1:nrow(data_sort_in_F))  
+
+data_sort_in_T <- data_sort_in_T[,-1]
+data_sort_in_M <- data_sort_in_M[,-(1:2)]
+data_sort_in_F <- data_sort_in_F[,-(1:2)]
+
+data_sort_in <- left_join(data_sort_in_T, data_sort_in_F, by="label_2")
+data_sort_in <- left_join(data_sort_in, data_sort_in_M, by="label_2")
+```
+
+```{r fixed one step}
+data_sort_in_T <- data[c(1, 6:16)]
+data_sort_in_M <- data[c(1, 17:27)]
+data_sort_in_F <- data[c(1, 28:38)]
+
+INDUSTRY_NAME <- c("label", 1:11)
+as.numeric(INDUSTRY_NAME)
+names(data_sort_in_T) <- names(data_sort_in_M) <- names(data_sort_in_F) <- INDUSTRY_NAME
+
+
+data_sort_in_T <- gather(data_sort_in_T, INDUSTRY, count_Tt, 2:12)
+data_sort_in_M <- gather(data_sort_in_M, INDUSTRY, count_Tm, 2:12)
+data_sort_in_F <- gather(data_sort_in_F, INDUSTRY, count_Tf, 2:12)
+
+
+
+data_sort_in <- merge(data_sort_in_T, data_sort_in_M, by=c("label", "INDUSTRY"))
+data_sort_in <- merge(data_sort_in, data_sort_in_F, by=c("label", "INDUSTRY"))
+```
+
+rm(data_TOTAL_gathered)
+
+```{r}
+data_WH
+data_BLK
+data_HISP
+data_ASIAN
+data_AIAN
+data_nhopi
+data_tomr
+data_Min
+data_WHp
+data_BLKp
+data_HISPp
+data_AIANp
+data_nhopip
+data_asianp
+data_tomrp
+data_Minp
+data_PTOTAL
+```
+
+
+```{r}
+data2 <- data
+gather(data2, INDUSTRY, )
+```
+
+stocks <- data_frame(
+  time = as.Date('2009-01-01') + 0:9,
+  X = rnorm(10, 0, 1),
+  Y = rnorm(10, 0, 2),
+  Z = rnorm(10, 0, 4)
+)
+
+stocks3 <- gather(stocks, stock, price, 2:4)
+stocksb <- data.frame(stocks,
+                      A = rnorm(10, 0, 8),
+                      B = rnorm(10, 0, 16),
+                      C = rnorm(10, 0, 32)
+)
+
+```{r}
+
+```
+
+bind_rows()
+
+4+11*18*3
+ncol(data)
+
+
+
+```{r}
+seqtemp <- seq(1,length(data),1)
+v <- c()
+for (i in seqtemp){
+  v[i] <- c(is.null(data[i]))
+}
+print(v)
+```
+
+v <- c(data$NAC3_Label)
+vFIRMS <- c(data$FIRMS)
+head(vFIRMS, n = 100)
+unique(data$FIRMS)
+
+head(data$WHMp1)
+head(data$WHfp1)
+sump <- data$WHMp1 + data$WHfp1
+head(sump)
+
+rm(data)
+data2 <- data
+
+
+
+?read.table
+rm("data")
+
+
+count(unique(data$NAC3_Label))
+count(data, NAC3_Label)
+count(data, CBSA_LABEL)
+vcount <- count(data, TOTAL_UNIT)
+
+head(vcount)
+hist(vcount)
+
+
+count()
+
+TOTAL_UNIT <- data$TOTAL_UNIT
+ggplot(data, aes(x = TOTAL_UNIT, y = count(data$TOTAL_UNIT))) + geom_histogram(binwidth = 5)
+
+
+
+
+data[!complete.cases(data),]
+
+tbl = tabular 扁平的
+
+
+
+
+cc <- count(data, pctofst)
+
+
+#Split
+
+Split by RACE, GENDER, 
+
+```{r}
+data_TOTAL <- data[c(5:15)]
+data_TOTAL_gathered <- gather(data_TOTAL, INDUSTRY, count, 1:11)
+data_TOTAL_gathered <- mutate(data_TOTAL_gathered, RACE = "T", GENDER = "T")
+#stocks3 <- gather(stocks, stock, price, 2:4)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
