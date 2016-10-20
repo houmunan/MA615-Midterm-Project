@@ -245,7 +245,6 @@ data_TOTAL <- bind_rows(data_TOTAL, data_TOTAL_T, data_TOTAL_F, data_TOTAL_M)
 
 
 
-
 But this could be too long. My computer won't handle this tidy format.
 
 Also, it  can be unnecessary to tidy industries because we don't need to test the difference among different industry
