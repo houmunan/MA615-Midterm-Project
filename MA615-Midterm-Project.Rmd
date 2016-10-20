@@ -47,8 +47,9 @@ As long as our purpose of tidying this data is known, the tidying steps are as f
 #First step, analyse the 600 columns
 
 ```{r}
-variable.names(data)
+
 ```
+
 
 The first obvious mess thing is that, it is sure not each of columns should be a single variable. Inside columns, there are both variables and observations. Within them, "CBSA_LABEL" are area information, "NAC3_Label" are industry information; they are for sure fixed variables(dimensions) of the data. For variables "X_TYPE_", "TOTAL_UNIT", "FIRMS", "pctofst", I can't figure out what do they mean; however,
 
@@ -118,6 +119,14 @@ So we can start tidy now.
 data$label <- c(1:nrow(data)) #mark for further merge
 data <- data[,c(601,1:600)] #rearrange the label vector to the first
 ```
+
+```{r}
+VAR_NAME_ALL <- c(variable.names(data))
+VAR_NAME_ALL
+VAR_NAME <- VAR_NAME_ALL[seq(6,589,11)]
+VAR_NAME #will be used later
+```
+
 data <- data_backup
 #List all variable names to operate
 
@@ -184,12 +193,13 @@ data_sort_in <- left_join(data_sort_in_T, data_sort_in_F, by="label_2")
 data_sort_in <- left_join(data_sort_in, data_sort_in_M, by="label_2")
 ```
 
-```{r fix up previous}
+```{r fixed one step}
 data_sort_in_T <- data[c(1, 6:16)]
 data_sort_in_M <- data[c(1, 17:27)]
 data_sort_in_F <- data[c(1, 28:38)]
 
 INDUSTRY_NAME <- c("label", 1:11)
+as.numeric(INDUSTRY_NAME)
 names(data_sort_in_T) <- names(data_sort_in_M) <- names(data_sort_in_F) <- INDUSTRY_NAME
 
 
@@ -197,12 +207,60 @@ data_sort_in_T <- gather(data_sort_in_T, INDUSTRY, count_Tt, 2:12)
 data_sort_in_M <- gather(data_sort_in_M, INDUSTRY, count_Tm, 2:12)
 data_sort_in_F <- gather(data_sort_in_F, INDUSTRY, count_Tf, 2:12)
 
-as.numeric(as.character(data_sort_in$INDUSTRY))
 
-data_sort_in <- merge(data_sort_in_T, data_sort_in_F, by=c("label", "INDUSTRY"))
-data_sort_in <- left_join(data_sort_in, data_sort_in_M, by="label")
+
+data_sort_in <- merge(data_sort_in_T, data_sort_in_M, by=c("label", "INDUSTRY"))
+data_sort_in <- merge(data_sort_in, data_sort_in_F, by=c("label", "INDUSTRY"))
 ```
 
+```{r first step before loop}
+INDUSTRY_NAME <- c("label", 1:11)
+data_sort_in <- data.frame(label = NA, INDUSTRY = NA)
+
+data_sort_in_1 <- data[c(1, (6):(16))]
+data_sort_in_2 <- data[c(1, (17):(27))]
+data_sort_in_3 <- data[c(1, (28):(38))]
+
+names(data_sort_in_1) <- names(data_sort_in_2) <- names(data_sort_in_3) <- INDUSTRY_NAME
+
+data_sort_in_1 <- gather(data_sort_in_1, INDUSTRY, a, 2:12)
+data_sort_in_2 <- gather(data_sort_in_2, INDUSTRY, b, 2:12)
+data_sort_in_3 <- gather(data_sort_in_3, INDUSTRY, c, 2:12)
+
+names(data_sort_in_1) <- c("label", "INDUSTRY", VAR_NAME[1])
+names(data_sort_in_2) <- c("label", "INDUSTRY", VAR_NAME[2])
+names(data_sort_in_3) <- c("label", "INDUSTRY", VAR_NAME[3])
+
+data_sort_in <- merge(data_sort_in_1, data_sort_in_2, by=c("label", "INDUSTRY"))
+data_sort_in <- merge(data_sort_in, data_sort_in_3, by=c("label", "INDUSTRY"))
+```
+rm(data_sort_in_3)
+```{r second step loop}
+
+
+for (i in 1:(11*18*3-1)) {
+
+data_sort_in_1 <- data[c(1, (33*i + 6):(33*i + 16))]
+data_sort_in_2 <- data[c(1, (33*i + 17):(33*i + 27))]
+data_sort_in_3 <- data[c(1, (33*i + 28):(33*i + 38))]
+
+names(data_sort_in_1) <- names(data_sort_in_2) <- names(data_sort_in_3) <- INDUSTRY_NAME
+
+data_sort_in_1 <- gather(data_sort_in_1, INDUSTRY, a, 2:12)
+data_sort_in_2 <- gather(data_sort_in_2, INDUSTRY, b, 2:12)
+data_sort_in_3 <- gather(data_sort_in_3, INDUSTRY, c, 2:12)
+
+names(data_sort_in_1) <- c("label", "INDUSTRY", VAR_NAME[3*i + 1])
+names(data_sort_in_2) <- c("label", "INDUSTRY", VAR_NAME[3*i + 2])
+names(data_sort_in_3) <- c("label", "INDUSTRY", VAR_NAME[3*i + 3])
+
+data_sort_in <- merge(data_sort_in, data_sort_in_1, by=c("label", "INDUSTRY"))
+data_sort_in <- merge(data_sort_in, data_sort_in_2, by=c("label", "INDUSTRY"))
+data_sort_in <- merge(data_sort_in, data_sort_in_3, by=c("label", "INDUSTRY"))
+
+}
+```
+VAR_NAME[3]
 ?subset
 
 ```{r}
