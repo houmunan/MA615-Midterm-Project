@@ -19,6 +19,7 @@ library(plyr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(ggvis)
 data <- read.table("data/YEAR09_CBSA_NAC3.txt", header = TRUE, sep = ";", quote = "", dec = ".", fill = TRUE)
 data_backup <- data
 ```
@@ -291,6 +292,13 @@ data_TOTAL <- right_join(data_dict, data_TOTAL, by="label")
 head(data_TOTAL)
 ```
 
+remove label
+
+```{r}
+data_TOTAL <- data_TOTAL[,c(2:ncol(data_TOTAL))]
+head(data_TOTAL)
+```
+
 So that's it.
 
 But this could be too long. Also, it might be unnecessary to tidy industries because we don't need to test the difference among different industry.
@@ -384,7 +392,16 @@ Choose Method 1
 
 #Visualization
 
-For data_TOTAL, 
+For data_TOTAL, use package ggvis is a good idea.
+
+```{r ggvis}
+
+data_TOTAL %>%
+  ggvis
+```
+
+
+
 
 
 
