@@ -88,7 +88,12 @@ test <- data[,c(1:275, 287:297, 276:286,
 #=================DRAFT=====================================================================
 
 
+re-arrange, remove label
 
+```{r re-list variables, remove label}
+data_TOTAL_2 <- data_TOTAL[,c(2:5, 8:ncol(data_TOTAL), 6:7)]
+head(data_TOTAL_2)
+```
 
 
 #Drafts
