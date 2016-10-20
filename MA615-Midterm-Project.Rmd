@@ -12,38 +12,232 @@ https://catalog.data.gov/dataset/job-patterns-for-minorities-and-women-in-privat
 
 #Import Data
 First of all we import the data from the .txt file, using read.table here. It is noticed that the separation of this dataset is ";" instead of ",", so we added the "sep";" argument. There is no missing values inside the dataset, or the missing values are valued instead of leaving blank.
+
 ```{r import txt}
+library(plyr)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 data <- read.table("data/YEAR09_CBSA_NAC3.txt", header = TRUE, sep = ";", quote = "", dec = ".", fill = TRUE)
+data_backup <- data
 ```
+
 This dataframe contains 600 columns(variables), 9064 rows(observations).
 
 #Analysis of the dataset
+
 In my understianding, because the dataset are named with "minorities and women", this dataset should be generally used to analyse:
+
 - the probable different job patterns among races, under each industry, or under each job category.
 - the probable different job patterns between genders, under each industry, or under each job category.
 - the probable different job patterns under the two kinds of previous precondition, and further under different geographic positions.
+
 ```{r}
-head(data)
+head(data, n=1)
 ```
+
 By looking at the data dictionary NAICS.xls, and also by reading the dataset, we can have the information below:
+
 Three categories under gender: Male, Female and Total
+
 The industries are separated into 11 different categories within each race and gender, labeled as *1, *2, ... *10, *1_2(* represents the wildcard character). Same number represent the same categoreis although in different industries.
+
 As long as our purpose of tidying this data is known, the tidying steps are as follow. After data being tidied up, the data should become more clear to model, compare and test for difference's significance.
 
-#First step, analyse the 600 variables
-The first obvious mess thing is that, it is sure not each of columns should be a single variable. Inside columns, there are both variables and observations. Within them, "CBSA_LABEL" are area information, "NAC3_Label" are industry information; they are for sure fixed variables(dimensions) of the data. For variables "X_TYPE_" and "TOTAL_UNIT", I can't figure out what do they mean; however, counting the outcomes of this variable:
+#First step, analyse the 600 columns
+
 ```{r}
-count(data$X_TYPE_)
+variable.names(data)
 ```
-there is only one kind of outcome. So I think it is proper to treat it as a fixed variable and leave it unchanged. 
-For "TOTAL_UNIT", as long as it seems could be a proper variable(although not fixed), I'll leave and regard it as already tidied.
+
+The first obvious mess thing is that, it is sure not each of columns should be a single variable. Inside columns, there are both variables and observations. Within them, "CBSA_LABEL" are area information, "NAC3_Label" are industry information; they are for sure fixed variables(dimensions) of the data. For variables "X_TYPE_", "TOTAL_UNIT", "FIRMS", "pctofst", I can't figure out what do they mean; however,
+
+For "X_TYPE_"
+
+```{r}
+count(data, X_TYPE_)
+```
+
+there is only one kind of outcome. So I think it could be the input type of the observation such as "integer", etc., os it is proper to treat it as a fixed variable and leave it unchanged. 
+
+```{r}
+unknown <- data.frame(data$CBSA_LABEL, data$NAC3_Label, data$TOTAL_UNIT, data$FIRMS, data$pctofst)
+```
+
+For "TOTAL_UNIT", 
+
+```{r}
+count(data, TOTAL_UNIT)
+min(data$TOTAL_UNIT)
+max(data$TOTAL_UNIT)
+```
+
+For "FIRMS"
+"
+```{r}
+count(data, FIRMS)
+min(data$FIRMS)
+max(data$FIRMS)
+```
+
+For "pctofst", could be "percent of state"
+
+```{r}
+min(data$pctofst)
+max(data$pctofst)
+sum(data$pctofst)
+```
+
+No conclusion found. Leave unchanged. While as long as it seems could be a proper variable(although not fixed), I'll leave and regard it as already tidied.
 
 Then for the rest of the listed variables. Three different variables should be extracted: 
+
 - RACE("TOTAL", "WH(White)", "BLK(Black)", "HISP(Hispanic)", "ASIAN", "AIAN(Indian)", "nhopi(Hawaiian)", "tomr(Two Race)", "Min(Minority)", "WHp(%)", "BLKp(%)", "HISPp(%)", "AIANp(%)", "nhopip(%)", "asianp(%)", "tomrp(%)", "Minp(%)", "PTOTAL(%)"), 
 - GENDER("F", "M", "T = F + M"), 
 - INDUSTRY("*1, *2, ... *10, *1_2"s)
+
+So there should be actually these fixed and measured variable column:
+
+- CBSA_LABEL
+- NAC3_Label
+- X_TYPE_
+
+- FIRMS
+- pctofst
+
+- TOTAL_UNIT
+- INDUSTRY
+- GENDER
+- RACE
+
+- count
+
+So we can start tidy now.
+
+```{r}
+data$label <- c(1:nrow(data)) #mark for further merge
+data <- data[,c(601,1:600)] #rearrange the label vector to the first
+```
+data <- data_backup
+#List all variable names to operate
+
+head(data, n=0)
+
+```{r gather INDUSTRY }
+data_TOTAL_T <- data[c(1, 6:16)]
+data_TOTAL_M <- data[c(1, 17:27)]
+data_TOTAL_F <- data[c(1, 28:38)]
+
+INDUSTRY_NAME <- c("label", 1:11)
+names(data_TOTAL_T) <- INDUSTRY_NAME
+names(data_TOTAL_M) <- INDUSTRY_NAME
+names(data_TOTAL_F) <- INDUSTRY_NAME
+
+data_TOTAL_T$GENDER <- "T"
+data_TOTAL_M$GENDER <- "M"
+data_TOTAL_F$GENDER <- "F"
+data_TOTAL_T$RACE <- "TOTAL"
+data_TOTAL_F$RACE <- "TOTAL"
+data_TOTAL_M$RACE <- "TOTAL"
+
+data_TOTAL_T <- gather(data_TOTAL_T, INDUSTRY, count, 2:12)
+data_TOTAL_F <- gather(data_TOTAL_F, INDUSTRY, count, 2:12)
+data_TOTAL_M <- gather(data_TOTAL_M, INDUSTRY, count, 2:12)
+
+data_TOTAL <- bind_rows(data_TOTAL_T, data_TOTAL_F, data_TOTAL_M)
+```
+
+But this could be too long. My computer won't handle this tidy format.
+
+Also, it  can be unnecessary to tidy industries because we don't need to test the difference among different industry
+
+#For compare different races & genders in same industries, we only tidy the part of industries:
+
+```{r}
+data_IND <- data_backup
+
+data_TOTAL_T <- data[c(1, 6:16)]
+data_TOTAL_M <- data[c(1, 17:27)]
+data_TOTAL_F <- data[c(1, 28:38)]
+
+INDUSTRY_NAME <- c("label", 1:11)
+names(data_TOTAL_T) <- names(data_TOTAL_M) <- names(data_TOTAL_F) <- INDUSTRY_NAME
+
+data_TOTAL_T$GENDER <- "T"
+data_TOTAL_M$GENDER <- "M"
+data_TOTAL_F$GENDER <- "F"
+data_TOTAL_T$RACE <- "TOTAL"
+data_TOTAL_F$RACE <- "TOTAL"
+data_TOTAL_M$RACE <- "TOTAL"
+
+data_TOTAL_T <- gather(data_TOTAL_T, INDUSTRY, count, 2:12)
+data_TOTAL_F <- gather(data_TOTAL_F, INDUSTRY, count, 2:12)
+data_TOTAL_M <- gather(data_TOTAL_M, INDUSTRY, count, 2:12)
+
+data_TOTAL <- bind_rows(data_TOTAL_T, data_TOTAL_F, data_TOTAL_M)
+```
+
+?subset
+
+```{r}
+data_TOTAL <- gather(data_TOTAL, INDUSTRY_T, INDUSTRY_count, 5:15)
+data_TOTAL <- gather(data_TOTAL, INDUSTRY_M, INDUSTRY_count, 5:15)
+data_TOTAL <- gather(data_TOTAL, INDUSTRY_F, INDUSTRY_count, 5:15)
+head(data_TOTAL)
+```
+
+```{r gather WH}
+data2 <- gather(data, INDUSTRY_TOTAL, INDUSTRY_count, 5:15)
+head(data2[,c(1:4,590,591)])
+```
+
+rm(data_TOTAL_gathered)
+
+```{r}
+data_WH
+data_BLK
+data_HISP
+data_ASIAN
+data_AIAN
+data_nhopi
+data_tomr
+data_Min
+data_WHp
+data_BLKp
+data_HISPp
+data_AIANp
+data_nhopip
+data_asianp
+data_tomrp
+data_Minp
+data_PTOTAL
+```
+
+
+```{r}
+data2 <- data
+gather(data2, INDUSTRY, )
+```
+
+stocks <- data_frame(
+  time = as.Date('2009-01-01') + 0:9,
+  X = rnorm(10, 0, 1),
+  Y = rnorm(10, 0, 2),
+  Z = rnorm(10, 0, 4)
+)
+
+stocks3 <- gather(stocks, stock, price, 2:4)
+stocksb <- data.frame(stocks,
+  A = rnorm(10, 0, 8),
+  B = rnorm(10, 0, 16),
+  C = rnorm(10, 0, 32)
+)
+
+```{r}
+
+```
+
+bind_rows()
 
 4+11*18*3
 ncol(data)
@@ -79,10 +273,15 @@ rm("data")
 
 
 count(unique(data$NAC3_Label))
-count(data$NAC3_Label)
-count(data$CBSA_LABEL)
-count(data$TOTAL_UNIT)
-count(data$FIRMS)
+count(data, NAC3_Label)
+count(data, CBSA_LABEL)
+vcount <- count(data, TOTAL_UNIT)
+
+head(vcount)
+hist(vcount)
+
+
+count()
 
 TOTAL_UNIT <- data$TOTAL_UNIT
 ggplot(data, aes(x = TOTAL_UNIT, y = count(data$TOTAL_UNIT))) + geom_histogram(binwidth = 5)
@@ -97,8 +296,19 @@ tbl = tabular 扁平的
 
 
 
+cc <- count(data, pctofst)
 
 
+#Split
+
+Split by RACE, GENDER, 
+
+```{r}
+data_TOTAL <- data[c(5:15)]
+data_TOTAL_gathered <- gather(data_TOTAL, INDUSTRY, count, 1:11)
+data_TOTAL_gathered <- mutate(data_TOTAL_gathered, RACE = "T", GENDER = "T")
+#stocks3 <- gather(stocks, stock, price, 2:4)
+```
 
 
 
