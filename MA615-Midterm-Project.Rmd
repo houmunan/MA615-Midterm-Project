@@ -11,6 +11,9 @@ File name: YEAR09_CBSA_NAC3.txt (with data_dictionary NAICS.xls)
 Resource from: 
 https://catalog.data.gov/dataset/job-patterns-for-minorities-and-women-in-private-industry-2009-eeo-1-naics-4-aggregate-rep
 
+#Presentation
+I would like to use this file for a presentation. The process is clear and oral enough.
+
 #Import Data
 First of all we import the data from the .txt file, using read.table here. It is noticed that the separation of this dataset is ";" instead of ",", so we added the "sep";" argument. There is no missing values inside the dataset, or the missing values are valued instead of leaving blank.
 
@@ -392,14 +395,11 @@ Choose Method 1
 
 #Visualization
 
-For data_TOTAL, use package ggvis is a good idea.
+For data_TOTAL, use package ggplot2.
 
-```{r ggvis}
-
-data_TOTAL %>%
-  ggvis
+```{r ggplot2}
+ggplot(data_TOTAL, aes(x = GENDER, y = count)) + geom_boxplot()
 ```
-
 
 
 
